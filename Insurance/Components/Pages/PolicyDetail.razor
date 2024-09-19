@@ -1,0 +1,222 @@
+﻿@page "/edit-policy"
+@page "/edit-policy/{Id:int}"
+@inject NavigationManager NavigationManager
+
+@inject IPolicyService PolicyService
+
+@if (Id is null)
+{
+    <PageTitle>Add New Policy</PageTitle>
+    <h3>Add New Policy</h3>
+
+}
+else
+{
+    <PageTitle>Edit "@CurrentPolicy.PolicyNumber"</PageTitle>
+    <h3>Edit Policy</h3>
+}
+
+<EditForm Model="CurrentPolicy" OnValidSubmit="HandleSubmit" EditContext="editContext">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="container">
+        <h4>Customer Details</h4>
+        <div class="row">
+            <div class="col">
+                <label for="customerfirstname">First Name</label>
+                <InputText placeholder="First Name" id="customerFirstName" @bind-Value="CurrentPolicy.CustomerFirstName" class="form-control"></InputText>
+                <ValidationMessage For="@(() => CurrentPolicy.CustomerFirstName)" />
+            </div>
+            <div class="col">
+                <label for="customerlastname">Last Name</label>
+                <InputText placeholder="Last Name" id="customerLastName" @bind-Value="CurrentPolicy.CustomerLastName" class="form-control"></InputText>
+                <ValidationMessage For="@(() => CurrentPolicy.CustomerLastName)" />
+            </div>
+        </div>
+        <div>
+            <label for="customerEmail">Email</label>
+            <InputText placeholder="Email" id="customerEmail" @bind-Value="CurrentPolicy.CustomerEmail" class="form-control"></InputText>
+            <ValidationMessage For="@(() => CurrentPolicy.CustomerEmail)" />
+        </div>
+        <div>
+            <br /><h6><strong>Policy Type: Home</strong></h6>
+            <InputCheckbox id="homeInsurance" @bind-Value="CurrentPolicy!.HomeInsurance"></InputCheckbox>
+            <label for="homeInsurance">Home Insurance</label>
+            <ValidationMessage For="() => CurrentPolicy.HomeInsurance" class="text-danger d-block" />
+        </div>
+        <div class="form-group" style="display:@(CurrentPolicy!.HomeInsurance ? "block" : "none")">
+            <div>
+                <h5>Home Policy Details</h5>
+                <label for="homeAddress">Home Address</label>
+                <InputText id="homeAddress" @bind-Value="CurrentPolicy!.HomeAddress" class="form-control"></InputText>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="homeArea">Home Area</label>
+                    <InputText id="homeArea" @bind-Value="CurrentPolicy!.HouseArea" class="form-control"></InputText>
+                </div>
+                <div class="col">
+                    <label for="housePrice">House Price</label>
+                    <InputNumber id="housePrice" @bind-Value="CurrentPolicy!.HousePrice" class="form-control"></InputNumber>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="numberOfBedrooms">Number of Bedrooms</label>
+                    <InputNumber id="numberOfBedrooms" @bind-Value="CurrentPolicy!.NumberofBedrooms" class="form-control"></InputNumber>
+                </div>
+                <div class="col">
+                    <label for="numberofBathrooms">Number of Bathrooms</label>
+                    <InputNumber id="numberofBathrooms" @bind-Value="CurrentPolicy!.NumberofBathrooms" class="form-control"></InputNumber>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="coverage">Coverage</label>
+                    <InputText placeholder="Basic"  id="coverage" @bind-Value="CurrentPolicy!.Coverage" class="form-control"></InputText>
+                </div>
+                <div class="col">
+                    <label for="monthlyPayment">Monthly Payment</label>
+                    <InputNumber placeholder="$00.00" id="monthlyPayment" @bind-Value="CurrentPolicy!.MonthlyPayment" class="form-control"></InputNumber>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="startDate">Start Date</label>
+                    <InputDate id="startDate" @bind-Value="CurrentPolicy!.StartDate" class="form-control"></InputDate>
+                </div>
+                <div class="col">
+                    <label for="endDate">End Date</label>
+                    <InputDate id="endDate" @bind-Value="CurrentPolicy!.EndDate" class="form-control"></InputDate>
+                </div>
+            </div>
+        </div>
+        <div>
+            <br /><h6><strong>Policy Type: Auto</strong></h6>
+            <InputCheckbox id="carInsurance" @bind-Value="CurrentPolicy!.CarInsurance"></InputCheckbox>
+            <label for="carInsurance">Auto Insurance</label>
+        </div>
+        <div class="form-group" style="display:@(CurrentPolicy!.CarInsurance ? "block" : "none")">
+            <div class="row">
+                <h6>Auto Policy Details</h6>
+                <div class="col">
+                    <label for="make">Make</label>
+                    <InputText id="Make" placeholder="Toyota" @bind-Value="CurrentPolicy!.Make" class="form-control"></InputText>
+                    <ValidationMessage For="@(() => CurrentPolicy.Make)" />
+                </div>
+                <div class="col">
+                    <label for="model">Model</label>
+                    <InputText placeholder="Highlander" id="model" @bind-Value="CurrentPolicy.Model" class="form-control"></InputText>
+                    <ValidationMessage For="@(() => CurrentPolicy.Model)" />
+                </div>
+                <div class="col">
+                    <label for="year">Year</label>
+                    <InputNumber placeholder="YYYY" id="year" @bind-Value="CurrentPolicy.Year" class="form-control"></InputNumber>
+                    <ValidationMessage For="@(() => CurrentPolicy.Year)" />
+                </div>
+                <div class="col">
+                    <label for="MileagePerYear">Mileage Per Year</label>
+                    <InputNumber placeholder="100000" id="MileagePerYear" @bind-Value="CurrentPolicy.MileagePerYear" class="form-control"></InputNumber>
+                    <ValidationMessage For="@(() => CurrentPolicy.MileagePerYear)" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="vin">Vin</label>
+                    <InputText placeholder="ABDED12345XYZ1234" id="vin" @bind-Value="CurrentPolicy.Vin" class="form-control"></InputText>
+                    <ValidationMessage For="@(() => CurrentPolicy.Vin)" />
+                </div>
+                <div class="col"></div>
+            </div>
+        </div>
+        <div>
+            <br /><h6><strong>Policy Type - Life</strong></h6>
+            <InputCheckbox id="lifeInsurance" @bind-Value="CurrentPolicy!.LifeInsurance"></InputCheckbox>
+            <label for="lifeInsurance">Life Insurance</label>
+        </div>
+        <div class="form-group" style="display:@(CurrentPolicy!.LifeInsurance ? "block" : "none")">
+            <div>
+                <h6>Life Policy Details</h6>
+                <label for="ExistingConditions">Existing Conditions</label>
+                <InputText placeholder="None"  id="ExistingConditions" @bind-Value="CurrentPolicy!.ExistingConditions" class="form-control"></InputText>
+            </div>
+            <div>
+                <label for="beneficiary">Beneficiary</label>
+                <InputText placeholder="Spouse, Children" id="beneficiary" @bind-Value="CurrentPolicy!.Beneficiary" class="form-control"></InputText>
+            </div>
+        </div>
+        <div>
+            <br />
+            <button type="submit" class="btn btn-primary">Save</button>
+            <button type="button" class="btn btn-primary" @onclick="CancelEdit">Cancel</button>
+        </div>
+    </div>
+</EditForm>
+@if (valid)
+{
+    <div class="alert alert-success mt-3">You submitted a valid form</div>
+}
+
+@code {
+    EditContext editContext;
+    ValidationMessageStore validationMessages;
+    bool valid;
+
+    [Parameter]
+    public int? Id { get; set; }
+
+    public Policy CurrentPolicy { get; set; } = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id is not null)
+        {
+            var policy = await PolicyService.GetPolicyByIdAsync((int)Id);
+
+            if (policy is not null)
+                CurrentPolicy = policy;
+        }
+    }
+
+    async Task HandleSubmit()
+    {
+        editContext = new(CurrentPolicy);
+        validationMessages = new(editContext);
+        valid = editContext.Validate();
+        var homeInsurance = editContext.Field(nameof(CurrentPolicy.HomeInsurance));
+        if (CurrentPolicy.HomeInsurance is false && CurrentPolicy.CarInsurance is false &&
+        CurrentPolicy.LifeInsurance is false)
+        {
+            validationMessages.Add(homeInsurance, "You must select one of the insurance policies.");
+            valid = false;
+        }
+
+        try
+        {
+            if (valid)
+            {
+                if (Id is not null)
+                {
+                    //update
+                    await PolicyService.UpdatePolicyAsync(CurrentPolicy, (int)Id);
+                    NavigationManager.NavigateTo("/policy");
+                }
+                else //add
+                {
+                    await PolicyService.AddPolicyAsync(CurrentPolicy);
+                    NavigationManager.NavigateTo("/policy");
+                }
+            }
+        }
+        catch(Exception ex)
+        {
+            throw ex;
+        }
+       
+    }
+
+    void CancelEdit()
+    {
+        NavigationManager.NavigateTo("/policy");
+    }
+}

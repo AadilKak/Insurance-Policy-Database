@@ -1,0 +1,109 @@
+﻿@page "/policy"
+@attribute [StreamRendering]
+@inject NavigationManager NavigationManager
+@inject IPolicyService PolicyService
+
+
+<h3>Policy Overview</h3>
+<button class="btn btn-primary" @onclick="AddPolicy">Add New Policy</button>
+
+@if (Visible)
+{
+    <FluentPaginator State="@pagination"   />
+    
+    <FluentDataGrid Items="@Policies" ResizableColumns=true Pagination="@pagination">
+        <PropertyColumn Title="Policy #" Property="@(c => c.PolicyNumber)" Sortable="true"></PropertyColumn>
+        <PropertyColumn Property="@(c => c.CustomerFirstName)" Sortable="true" Filtered="!string.IsNullOrWhiteSpace(nameFilter)" Tooltip="true" Title="First Name">
+            <ColumnOptions>
+                <div class="search-box">
+                    <FluentSearch type="search" Autofocus=true @bind-Value=nameFilter @oninput="HandleNameFilter" @bind-Value:after="HandleClear" Placeholder="First name..." />
+                </div>
+            </ColumnOptions>
+        </PropertyColumn>
+        <PropertyColumn Title="First Name" Property="@(c => c.CustomerFirstName)" Sortable="true"></PropertyColumn>
+        <PropertyColumn Title="Last Name" Property="@(c => c.CustomerLastName)" Sortable="true"></PropertyColumn>
+        <PropertyColumn Title="Email" Property="@(c => c.CustomerEmail)" Sortable="true"></PropertyColumn>
+       
+         <TemplateColumn Title="Actions">
+            <FluentButton IconEnd="@(new Icons.Regular.Size32.Edit())" @onclick="() => EditPolicy((int)context.PolicyNumber)" />
+        </TemplateColumn>
+    </FluentDataGrid>
+    
+}
+
+
+@code {
+    [Parameter]
+    public bool Visible { get; set; }
+    string nameFilter = string.Empty;
+
+    public IQueryable<PolicyViewModel> Policies { get; set; }
+    public string Filter { get; set; }
+
+    PaginationState pagination = new PaginationState { ItemsPerPage = 3 };
+
+    private void HandleNameFilter(ChangeEventArgs args)
+    {
+        if (args.Value is string value)
+        {
+            nameFilter = value;
+        }
+    }
+
+    private void HandleClear()
+    {
+        if (string.IsNullOrWhiteSpace(nameFilter))
+        {
+            nameFilter = string.Empty;
+        }
+    }
+
+
+    protected override void OnInitialized()
+    {
+        // // await Task.Delay(500);  
+        // LoadPolicies();
+        // //LoadPoliciesStatic();
+        // Visible = true;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // await Task.Delay(500);
+        var policies = await PolicyService.GetAllPoliciesAsync();
+        Policies = policies.Select(x => new PolicyViewModel()
+            {
+                PolicyNumber = x.PolicyNumber,
+                CustomerFirstName = x.CustomerFirstName,
+                CustomerLastName = x.CustomerLastName,
+                CustomerEmail = x.CustomerEmail
+            }).Where(x => x.CustomerFirstName.Contains(nameFilter, StringComparison.CurrentCultureIgnoreCase)).AsQueryable();
+                    
+        Visible = true;
+
+    }
+    async void LoadPolicies()
+    {
+        
+        var policies = await PolicyService.GetAllPoliciesAsync();
+        Policies = policies.Select(x => new PolicyViewModel()
+            {
+                PolicyNumber = x.PolicyNumber,
+                CustomerFirstName = x.CustomerFirstName,
+                CustomerLastName = x.CustomerLastName,
+                CustomerEmail = x.CustomerEmail
+            }).AsQueryable();
+                       
+    }
+
+    void AddPolicy()
+    {
+        NavigationManager.NavigateTo($"/edit-policy");
+    }
+
+    void EditPolicy(int id)
+    {
+        NavigationManager.NavigateTo($"/edit-policy/{id}");
+    }
+}
+

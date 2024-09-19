@@ -1,0 +1,89 @@
+﻿@page "/insurance"
+@attribute [StreamRendering]
+@inject NavigationManager NavigationManager 
+@inject IPolicyService PolicyService 
+ 
+
+<PageTitle>Policies</PageTitle>
+<h3>Insurance Policies</h3>
+<button class="btn btn-primary" @onclick="AddPolicy">Add New Policy</button>
+
+@if(policies.Count == 0)
+{
+    <p><em>Loading Policies...</em></p>
+}
+else
+{
+    
+    <div class="form-group">
+        <br />
+        <input class="form-control" type="text" placeholder="Filter..."
+               @bind="Filter"
+               @bind:event="oninput">
+    </div>
+    <table class="table">
+        <thead>
+             <tr>
+                 <th>Policy#</th>
+                 <th>Full Name</th>
+                 <th>Email</th>
+                 <th>&nbsp;</th>
+                <th>&nbsp;</th>
+             </tr>
+        </thead>
+        <tbody>
+            @foreach (var policy in policies)
+            {
+                if (!IsVisible(policy))
+                    continue;
+                <tr>
+                    <td>@policy.PolicyNumber</td>
+                    <td>@policy.CustomerLastName, @policy.CustomerFirstName</td>
+                    <td>@policy.CustomerEmail</td>
+                    <td><button class="btn btn-primary" @onclick="@(() => EditPolicy(policy.PolicyNumber))">Edit</button></td>
+                    <td><button class="btn btn-danger" @onclick="@(() => DeletePolicy(policy.PolicyNumber))">Delete</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<Policy>  policies = new List<Policy>();
+    public string Filter { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+       // await Task.Delay(500);
+        policies = await PolicyService.GetAllPoliciesAsync();
+    }
+
+    void EditPolicy(int id)
+    {
+        NavigationManager.NavigateTo($"/edit-policy/{id}");
+    }
+    async Task DeletePolicy(int id)
+    {
+        await PolicyService.DeletePolicyAsync(id);
+        policies = await PolicyService.GetAllPoliciesAsync();
+    }
+    
+    void AddPolicy()
+    {
+        NavigationManager.NavigateTo($"/edit-policy");
+    }
+
+    public bool IsVisible(Policy policy)
+    {
+        if (string.IsNullOrEmpty(Filter))
+            return true;
+
+        // if (policy.CustomerFirstName.Contains(Filter, StringComparison.OrdinalIgnoreCase))
+        //     return true;
+
+        if (policy.CustomerLastName.ToString().ToLower().StartsWith(Filter.ToLower()) || policy.CustomerFirstName.ToString().ToLower().StartsWith(Filter.ToLower()))
+            return true;
+
+        return false;
+    }
+
+}
